@@ -66,8 +66,8 @@ def GenerateUpgradeSql(oldSql,newSql):
         difflist = list(diff)
         print difflist
         for d in difflist:
-            if d.find('-') == 0:#'delete attribute in old sql'
-                if d.find("create table"):
+            if d.startswith('-') == 0:#'delete attribute in old sql'
+                if d.startswith("create table"):
                     delTableSql = GenerateDeleteTableSql(d[1:])
                     if delTableSql != None:
                         upgradeSql = upgradeSql + delTableSql + '\n'
@@ -77,7 +77,7 @@ def GenerateUpgradeSql(oldSql,newSql):
                     delAttrSql = GenerateDeleteAttributeSql(tablename,d[1:])
                     if delAttrSql != None:
                         upgradeSql = upgradeSql + delAttrSql + '\n'
-            elif d.find('+') == 0:
+            elif d.startswith('+') == 0:
                 # if d.find("create table"):
                 #     createTableSql = GenerateCreateTableSql(d[1:],newlines)
                 #     if createTableSql != None:
@@ -87,7 +87,7 @@ def GenerateUpgradeSql(oldSql,newSql):
                     sentence = GenerateAddAttributeSql(tablename,d[1:])
                     if sentence != None:
                         upgradeSql = upgradeSql + sentence + '\n'
-            elif d.find('?') == 0:
+            elif d.startswith('?') == 0:
                 print "unclear modify exist ",d
         return upgradeSql
     except:
