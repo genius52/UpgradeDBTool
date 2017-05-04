@@ -8,12 +8,11 @@ def FindRelatedTable(s,filecontent):
     regex = re.compile(pattern,re.DOTALL)
     m = regex.match(filecontent)
     if m:
-        print m.group(1)
         return m.group(1)
     return None
 
 def GenerateDeleteAttributeSql(table,attr):
-    pattern = r"(\S+)\s+(\S+)\s\S.*"
+    pattern = r"(\S+)[\s\t]+(\S+)[\s\n]*"
     m = re.match(pattern,attr.strip())
     if m:
         print "Delete" ,m.group(1)
@@ -22,7 +21,7 @@ def GenerateDeleteAttributeSql(table,attr):
     return None
 
 def GenerateAddAttributeSql(table,attr):
-    pattern = r"(\S+)\s+(\S+)\s\S.*"
+    pattern = r"(\S+)[\s\t]+(\S+)[\s\n]*"
     m = re.match(pattern,attr.strip())
     if m:
         print "Add" ,m.group(1)
@@ -36,33 +35,53 @@ def GenerateModifyAttributeSql(s):
 
 def GenerateDeleteTableSql(s):
     print "Delete table",s.strip()
-    return
+    pattern = r"create table\s*(\S+)[\s\n]*"
+    m = re.match(pattern,s.strip())
+    if m:
+        sql = "drop table %s;" % m.group(1)
+        return sql
+    return None
 
-def GenerateAddTableSql(s):
-    print "Add table",s.strip()
-    return
+def GenerateCreateTableSql(createtableline,filecontent):
+    print "Add table",createtableline.strip()
+    pattern = r"%s.*)\n\n" % createtableline
+    m = re.match(pattern,createtableline.strip())
+    if m:
+        sql = "create table %s;" % m.group(1)
+        return sql
+    return None
 
 def GenerateUpgradeSql(oldSql,newSql):
     try:
         oldFile = open(oldSql,'r')
         newFile = open(newSql,'r')
         if oldSql == "" or newSql == "":
-            print "Usage: test.py filename1 filename2"
             sys.exit()
-        text1_lines = oldFile.read().splitlines()
-        text2_lines = newFile.read().splitlines()
-        oldlines = open(oldSql, 'r').read()
-        newlines = open(newSql, 'r').read()
-        diff = difflib.ndiff(text1_lines,text2_lines)
+        with open(oldSql, 'r') as oldfile:
+            oldlines = oldfile.read()
+        with open(newSql, 'r') as newfile:
+            newlines = newfile.read()
+        diff = difflib.ndiff(oldlines.splitlines(),newlines.splitlines())
         upgradeSql = 'use rt_tms;\n'
-        for d in list(diff):
+        difflist = list(diff)
+        print difflist
+        for d in difflist:
             if d.find('-') == 0:#'delete attribute in old sql'
+                if d.find("create table"):
+                    delTableSql = GenerateDeleteTableSql(d[1:])
+                    if delTableSql != None:
+                        upgradeSql = upgradeSql + delTableSql + '\n'
+                        continue
                 tablename = FindRelatedTable(d[1:].strip(),oldlines)
                 if tablename != None:
-                    sentence = GenerateDeleteAttributeSql(tablename,d[1:])
-                    if sentence != None:
-                        upgradeSql = upgradeSql + sentence + '\n'
+                    delAttrSql = GenerateDeleteAttributeSql(tablename,d[1:])
+                    if delAttrSql != None:
+                        upgradeSql = upgradeSql + delAttrSql + '\n'
             elif d.find('+') == 0:
+                # if d.find("create table"):
+                #     createTableSql = GenerateCreateTableSql(d[1:],newlines)
+                #     if createTableSql != None:
+                #         upgradeSql = upgradeSql + createTableSql + '\n'
                 tablename = FindRelatedTable(d[1:].strip(), newlines)
                 if tablename != None:
                     sentence = GenerateAddAttributeSql(tablename,d[1:])
@@ -75,4 +94,6 @@ def GenerateUpgradeSql(oldSql,newSql):
         oldFile.close()
         newFile.close()
         return None
-
+    else:
+        oldFile.close()
+        newFile.close()
