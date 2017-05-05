@@ -9,7 +9,7 @@
 
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QColor
-
+import os
 import GlobalSetting
 
 try:
@@ -90,11 +90,20 @@ class Ui_Dialog(object):
         self.upgradeSqlButton.clicked.connect(self.upgradeSql)
         self.updateDBWrapperButton.clicked.connect(self.updateDbwrapper)
         self.updateSystemdataButton.clicked.connect(self.updateSystemdata)
+        if not os.path.exists(GlobalSetting.New_Tmssql):
+            self.textNewSql.setTextColor(QColor(255,0,0))
         self.textNewSql.setText(GlobalSetting.New_Tmssql)
-        self.textNewSql.setTextColor(QColor(255,0,0))
+        if not os.path.exists(GlobalSetting.Old_Tmssql):
+            self.textOldSql.setTextColor(QColor(255, 0, 0))
         self.textOldSql.setText(GlobalSetting.Old_Tmssql)
+        if not os.path.exists(GlobalSetting.Dbwrapper_Design):
+            self.textDbwrapper.setTextColor(QColor(255, 0, 0))
         self.textDbwrapper.setText(GlobalSetting.Dbwrapper_Design)
+        if not os.path.exists(GlobalSetting.Systemdata_Datamodel):
+            self.textDatamodel.setTextColor(QColor(255, 0, 0))
         self.textDatamodel.setText(GlobalSetting.Systemdata_Datamodel)
+        if not os.path.exists(GlobalSetting.Systemdata_Convertor):
+            self.textConvertor.setTextColor(QColor(255, 0, 0))
         self.textConvertor.setText(GlobalSetting.Systemdata_Convertor)
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
