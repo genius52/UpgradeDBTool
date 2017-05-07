@@ -13,7 +13,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QColor
 import os
 import GlobalSetting
-import MyTextedit
+import DirEdit
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -41,7 +41,7 @@ class Ui_Dialog(object):
         self.groupBoxUpgrade.setObjectName(_fromUtf8("groupBoxUpgrade"))
 
         # self.textOldSql = QtGui.QLineEdit(self.groupBoxUpgrade)
-        self.textOldSql = MyTextedit.DirLineEdit()
+        self.textOldSql = DirEdit.DirLineEdit()
         self.textOldSql.setParent(self.groupBoxUpgrade)
         self.textOldSql.setGeometry(QtCore.QRect(100, 20, 641, 31))
         self.textOldSql.setObjectName(_fromUtf8("textOldSql"))
@@ -54,10 +54,12 @@ class Ui_Dialog(object):
         self.labelNewSql = QtGui.QLabel(self.groupBoxUpgrade)
         self.labelNewSql.setGeometry(QtCore.QRect(20, 70, 71, 16))
         self.labelNewSql.setObjectName(_fromUtf8("labelNewSql"))
-        self.textNewSql = QtGui.QTextEdit(self.groupBoxUpgrade)
+        self.textNewSql = DirEdit.DirLineEdit()
+        self.textNewSql.setParent(self.groupBoxUpgrade)
         self.textNewSql.setGeometry(QtCore.QRect(100, 60, 641, 31))
         self.textNewSql.setObjectName(_fromUtf8("textNewSql"))
-        self.textUpgradeSql = QtGui.QTextEdit(self.groupBoxUpgrade)
+        self.textUpgradeSql = DirEdit.DirLineEdit()
+        self.textUpgradeSql.setParent(self.groupBoxUpgrade)
         self.textUpgradeSql.setGeometry(QtCore.QRect(100, 100, 641, 31))
         self.textUpgradeSql.setObjectName(_fromUtf8("textUpgradeSql"))
         self.labelUpgradeSql = QtGui.QLabel(self.groupBoxUpgrade)
@@ -69,7 +71,8 @@ class Ui_Dialog(object):
         self.updateDBWrapperButton = QtGui.QPushButton(self.groupBoxDbwrapper)
         self.updateDBWrapperButton.setGeometry(QtCore.QRect(750, 20, 91, 23))
         self.updateDBWrapperButton.setObjectName(_fromUtf8("updateDBWrapperButton"))
-        self.textDbwrapper = QtGui.QTextEdit(self.groupBoxDbwrapper)
+        self.textDbwrapper = DirEdit.DirLineEdit()
+        self.textDbwrapper.setParent(self.groupBoxDbwrapper)
         self.textDbwrapper.setGeometry(QtCore.QRect(100, 20, 641, 31))
         self.textDbwrapper.setObjectName(_fromUtf8("textDbwrapper"))
         self.labelDbwrapper = QtGui.QLabel(self.groupBoxDbwrapper)
@@ -84,40 +87,28 @@ class Ui_Dialog(object):
         self.labelConvertor = QtGui.QLabel(self.groupBoxSystemData)
         self.labelConvertor.setGeometry(QtCore.QRect(10, 70, 81, 16))
         self.labelConvertor.setObjectName(_fromUtf8("labelConvertor"))
-        self.textConvertor = QtGui.QTextEdit(self.groupBoxSystemData)
+        self.textConvertor = DirEdit.DirLineEdit()
+        self.textConvertor.setParent(self.groupBoxSystemData)
         self.textConvertor.setGeometry(QtCore.QRect(100, 60, 641, 31))
         self.textConvertor.setObjectName(_fromUtf8("textConvertor"))
         self.labelDatamodel = QtGui.QLabel(self.groupBoxSystemData)
         self.labelDatamodel.setGeometry(QtCore.QRect(10, 30, 81, 16))
         self.labelDatamodel.setObjectName(_fromUtf8("labelDatamodel"))
-        self.textDatamodel = QtGui.QTextEdit(self.groupBoxSystemData)
+        self.textDatamodel = DirEdit.DirLineEdit()
+        self.textDatamodel.setParent(self.groupBoxSystemData)
         self.textDatamodel.setGeometry(QtCore.QRect(100, 20, 641, 31))
         self.textDatamodel.setObjectName(_fromUtf8("textDatamodel"))
 
         self.upgradeSqlButton.clicked.connect(self.upgradeSql)
         self.updateDBWrapperButton.clicked.connect(self.updateDbwrapper)
         self.updateSystemdataButton.clicked.connect(self.updateSystemdata)
-        if not os.path.exists(GlobalSetting.New_Tmssql):
-            self.textNewSql.setTextColor(QColor(255,0,0))
         self.textNewSql.setText(GlobalSetting.New_Tmssql)
-        # if not os.path.exists(GlobalSetting.Old_Tmssql):
-            # self.textOldSql.setTextColor(QColor(255, 0, 0))
         self.textOldSql.setText(GlobalSetting.Old_Tmssql)
-        if not os.path.exists(GlobalSetting.Dbwrapper_Design):
-            self.textDbwrapper.setTextColor(QColor(255, 0, 0))
         self.textDbwrapper.setText(GlobalSetting.Dbwrapper_Design)
-        if not os.path.exists(GlobalSetting.Systemdata_Datamodel):
-            self.textDatamodel.setTextColor(QColor(255, 0, 0))
         self.textDatamodel.setText(GlobalSetting.Systemdata_Datamodel)
-        if not os.path.exists(GlobalSetting.Systemdata_Convertor):
-            self.textConvertor.setTextColor(QColor(255, 0, 0))
         self.textConvertor.setText(GlobalSetting.Systemdata_Convertor)
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
-
-    def textChanged(self,string):
-        QtGui.QMessageBox.information("Hello!", "Current String is:\n" + string)
-        return
 
     def upgradeSql(self):
         print self.textNewSql.toPlainText(),"upgradesql"
