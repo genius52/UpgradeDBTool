@@ -7,7 +7,9 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+from PyQt4.Qt import Qt, QObject,QLineEdit
+from PyQt4.QtCore import pyqtSlot,SIGNAL,SLOT
+from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QColor
 import os
 import GlobalSetting
@@ -36,7 +38,8 @@ class Ui_Dialog(object):
         self.groupBoxUpgrade.setFlat(False)
         self.groupBoxUpgrade.setCheckable(False)
         self.groupBoxUpgrade.setObjectName(_fromUtf8("groupBoxUpgrade"))
-        self.textOldSql = QtGui.QTextEdit(self.groupBoxUpgrade)
+
+        self.textOldSql = QtGui.QLineEdit(self.groupBoxUpgrade)
         self.textOldSql.setGeometry(QtCore.QRect(100, 20, 641, 31))
         self.textOldSql.setObjectName(_fromUtf8("textOldSql"))
         self.labelOldSql = QtGui.QLabel(self.groupBoxUpgrade)
@@ -87,14 +90,21 @@ class Ui_Dialog(object):
         self.textDatamodel = QtGui.QTextEdit(self.groupBoxSystemData)
         self.textDatamodel.setGeometry(QtCore.QRect(100, 20, 641, 31))
         self.textDatamodel.setObjectName(_fromUtf8("textDatamodel"))
+
+        # self.textOldSql.connect(self.textOldSql,SIGNAL("textChanged(QString)"),self,SLOT("textChanged(QString)"))
+        # mytextchanged = QtCore.pyqtSignal(str)
+        # self.textOldSql.emit(QtCore.SIGNAL("mytextchanged(str)"), self.textOldSql)
+        # QtCore.QObject.connect(self.textOldSql, QtCore.SIGNAL(_fromUtf8("mytextchanged(str)")), self.oldSqlChanged)
+        self.textOldSql.textChanged.connect(self.textChanged)
+
         self.upgradeSqlButton.clicked.connect(self.upgradeSql)
         self.updateDBWrapperButton.clicked.connect(self.updateDbwrapper)
         self.updateSystemdataButton.clicked.connect(self.updateSystemdata)
         if not os.path.exists(GlobalSetting.New_Tmssql):
             self.textNewSql.setTextColor(QColor(255,0,0))
         self.textNewSql.setText(GlobalSetting.New_Tmssql)
-        if not os.path.exists(GlobalSetting.Old_Tmssql):
-            self.textOldSql.setTextColor(QColor(255, 0, 0))
+        # if not os.path.exists(GlobalSetting.Old_Tmssql):
+            # self.textOldSql.setTextColor(QColor(255, 0, 0))
         self.textOldSql.setText(GlobalSetting.Old_Tmssql)
         if not os.path.exists(GlobalSetting.Dbwrapper_Design):
             self.textDbwrapper.setTextColor(QColor(255, 0, 0))
@@ -108,8 +118,11 @@ class Ui_Dialog(object):
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
+    def textChanged(self,string):
+        QtGui.QMessageBox.information("Hello!", "Current String is:\n" + string)
+        return
+
     def upgradeSql(self):
-        self.textNewSql.append()
         print self.textNewSql.toPlainText(),"upgradesql"
         return
 
