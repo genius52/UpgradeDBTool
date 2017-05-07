@@ -111,17 +111,15 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def upgradeSql(self):
-        print self.textNewSql.toPlainText(),"upgradesql"
+        print self.textNewSql.text()
         return
 
     def updateDbwrapper(self):
-        self.textDbwrapper.toPlainText()
-        print "updateDbwrapper"
+        print self.textDbwrapper.text()
         return
 
     def updateSystemdata(self):
-        self.textConvertor.toPlainText()
-        print "updateConvertor"
+        print self.textConvertor.text()
         return
 
     def retranslateUi(self, Dialog):
