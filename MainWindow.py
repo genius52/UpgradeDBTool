@@ -13,6 +13,7 @@ from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QColor
 import os
 import GlobalSetting
+import MyTextedit
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -39,7 +40,9 @@ class Ui_Dialog(object):
         self.groupBoxUpgrade.setCheckable(False)
         self.groupBoxUpgrade.setObjectName(_fromUtf8("groupBoxUpgrade"))
 
-        self.textOldSql = QtGui.QLineEdit(self.groupBoxUpgrade)
+        # self.textOldSql = QtGui.QLineEdit(self.groupBoxUpgrade)
+        self.textOldSql = MyTextedit.DirLineEdit()
+        self.textOldSql.setParent(self.groupBoxUpgrade)
         self.textOldSql.setGeometry(QtCore.QRect(100, 20, 641, 31))
         self.textOldSql.setObjectName(_fromUtf8("textOldSql"))
         self.labelOldSql = QtGui.QLabel(self.groupBoxUpgrade)
@@ -90,12 +93,6 @@ class Ui_Dialog(object):
         self.textDatamodel = QtGui.QTextEdit(self.groupBoxSystemData)
         self.textDatamodel.setGeometry(QtCore.QRect(100, 20, 641, 31))
         self.textDatamodel.setObjectName(_fromUtf8("textDatamodel"))
-
-        # self.textOldSql.connect(self.textOldSql,SIGNAL("textChanged(QString)"),self,SLOT("textChanged(QString)"))
-        # mytextchanged = QtCore.pyqtSignal(str)
-        # self.textOldSql.emit(QtCore.SIGNAL("mytextchanged(str)"), self.textOldSql)
-        # QtCore.QObject.connect(self.textOldSql, QtCore.SIGNAL(_fromUtf8("mytextchanged(str)")), self.oldSqlChanged)
-        self.textOldSql.textChanged.connect(self.textChanged)
 
         self.upgradeSqlButton.clicked.connect(self.upgradeSql)
         self.updateDBWrapperButton.clicked.connect(self.updateDbwrapper)

@@ -9,7 +9,7 @@ import GlobalSetting
 class DirLineEdit(QLineEdit, QtCore.QObject):
     @pyqtSlot(QtCore.QString)
     def mytextChanged(self, string):
-        QtGui.QMessageBox.information(self,"Hello!","Current String is:\n"+string)
+        # QtGui.QMessageBox.information(self,"Hello!","Current String is:\n"+string)
         if not os.path.exists(string):
             self.setStyleSheet("color: rgb(255, 0, 0);")
         else:
