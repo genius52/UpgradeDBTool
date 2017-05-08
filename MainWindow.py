@@ -8,10 +8,14 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4.Qt import Qt, QObject,QLineEdit
-from PyQt4.QtCore import pyqtSlot,SIGNAL,SLOT
+from PyQt4.QtCore import pyqtSlot,SIGNAL,SLOT,QString
 from PyQt4 import QtGui, QtCore
-from PyQt4.QtGui import QColor
+from PyQt4.QtGui import QColor,QMessageBox
 import os
+import sys
+import difflib
+import re
+import FileCompare
 import GlobalSetting
 import DirEdit
 
@@ -111,19 +115,123 @@ class Ui_Dialog(object):
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def upgradeSql(self):
-        print self.textNewSql.text()
-        return
+        try:
+            oldSqlPath = str(self.textOldSql.text())
+            newSqlPath = str(self.textNewSql.text())
+            # oldSqlPath = "D:\diff1.txt"
+            # newSqlPath = "D:\diff2.txt"
+            sql = FileCompare.GenerateUpgradeSql(oldSqlPath,newSqlPath)
+            if sql != None:
+                self.textUpgradeSql.setText(os.path.join(os.getcwd(),"upgrade.sql"))
+                with open(str(self.textUpgradeSql.text),"wt") as newsql:
+                    newsql.write(sql)
+        except Exception as e:
+            print e
+
 
     def updateDbwrapper(self):
+        #执行Sql->更新dbwrapper->修改Design.cs文件
         print self.textDbwrapper.text()
+
+        crcTool = os.path.join(os.getcwd(),GlobalSetting.CrcDbwrapper_TOOL)
+        cmd = "%s %s"%(crcTool,str(self.textDbwrapper.text().replace("\\","/")))
+        result = os.system(cmd)
+        # print result.read()
         return
+
+    def GenerateVarDefinition(self,attrtype, attr):
+        definiton = "\t\t[DataMember]\n\t\tpublic"
+        if "char" in attrtype:
+            definiton = definiton + " string " + attr.capitalize() + "\n"
+        elif "float" in attrtype:
+            definiton = definiton + " float " + attr.capitalize() + "\n"
+        elif "int" in attrtype:
+            definiton = definiton + " int " + attr.capitalize() + "\n"
+        return definiton
+
+    def AddAttributeInFile(self,table, attrtype, attr):
+        pattern = "public class DM_%s" % table.capitalize()
+        classDefPos = 0
+        lines = []
+        datamodelfile = open(str(self.textDatamodel.text()),'r')
+        for line in datamodelfile:  # 内置的迭代器, 效率很高
+            lines.append(line)
+        datamodelfile.close()
+        for line in lines:
+            if pattern in line:
+                defVal = self.GenerateVarDefinition(attrtype,attr)
+                lines.insert(classDefPos + 2,defVal)
+                break
+            classDefPos += 1
+        datamodelfile = open(str(self.textDatamodel.text()),'w')
+        datamodelfile.writelines(lines)
+        datamodelfile.close()
+
+    def GenerateConvertorExpression(self, attrtype, attr):
+        toDatamodelExpression = "\t\t\tdmObject.%s = efObject.%s;\n" % (attr.capitalize(),attr)
+        toEFObjectExpression = "\t\t\tefObject.%s = dmObject.%s;\n" % (attr,attr.capitalize())
+        return toDatamodelExpression,toEFObjectExpression
+
+    def AddConvertorInFile(self,table, attrtype, attr):
+        toDatamodelPattern = "public static DM_%s ToDataModel" % table.capitalize()
+        toEFPattern = "public static %s ToEFObject" % table
+        classDefPos = 0
+        lines = []
+        convertorfile = open(str(self.textConvertor.text()),'r')
+        for line in convertorfile:
+            lines.append(line)
+        convertorfile.close()
+        (toDatamodel, toEFObject) = self.GenerateConvertorExpression(attrtype, attr)
+        insertLineTag = 0
+        for line in lines:
+            if toDatamodelPattern in line:
+                lines.insert(classDefPos + 5,toDatamodel)
+                insertLineTag += 1
+            if toEFPattern in line:
+                lines.insert(classDefPos + 5, toEFObject)
+                insertLineTag += 1
+            if insertLineTag >= 2:
+                break
+            classDefPos += 1
+        convertorfile = open(str(self.textConvertor.text()),'w')
+        convertorfile.writelines(lines)
+        convertorfile.close()
+
+    def ModifySystemdataCode(self,oldSql, newSql):
+        try:
+            oldfile = open(oldSql, 'r')
+            oldlcontent = oldfile.read()
+            newfile = open(newSql, 'r')
+            newcontent = newfile.read()
+            diff = difflib.ndiff(oldlcontent.splitlines(), newcontent.splitlines())
+            for diffline in diff:
+                if diffline.startswith('+'):
+                    tablename = FileCompare.FindRelatedTable(diffline[1:].strip(), newcontent)
+                    if tablename != None:
+                        valueType = diffline[1:].strip().split()
+                        if len(valueType) > 2:
+                            self.AddAttributeInFile(tablename, valueType[1], valueType[0])
+                            self.AddConvertorInFile(tablename, valueType[1], valueType[0])
+                elif diffline.startswith('-'):
+                    print "Delete %s" % diffline[1:]
+
+        except Exception as e:
+            print e
 
     def updateSystemdata(self):
-        print self.textConvertor.text()
-        return
+        try:
+            # oldSqlPath = "D:\diff1.txt"
+            # newSqlPath = "D:\diff2.txt"
+            oldSqlPath = str(self.textOldSql.text())
+            newSqlPath = str(self.textNewSql.text())
+            result = self.ModifySystemdataCode(oldSqlPath,newSqlPath)
+            if result:
+                print result
+        except Exception as e:
+            QMessageBox.information(self,"updateSystemdata FAIL!",QString(e.message()))
 
     def retranslateUi(self, Dialog):
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog", None))
+        Dialog.setWindowTitle(_translate("Dialog", "数据库升级工具", None))
         self.groupBoxUpgrade.setTitle(_translate("Dialog", "升级脚本", None))
         self.labelOldSql.setText(_translate("Dialog", "SQL脚本(旧)", None))
         self.upgradeSqlButton.setText(_translate("Dialog", "生成升级脚本", None))

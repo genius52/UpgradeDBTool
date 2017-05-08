@@ -11,10 +11,13 @@ class DirLineEdit(QLineEdit, QtCore.QObject):
         # QtGui.QMessageBox.information(self,"Hello!","Current String is:\n"+string)
         if not os.path.exists(string):
             self.setStyleSheet("color: rgb(255, 0, 0);")
+            self.valid = False
         else:
             self.setStyleSheet("color: rgb(0, 0, 0);")
+            self.valid = True
 
     def __init__(self):
         super(DirLineEdit, self).__init__()
+        self.valid = False
         self.connect(self, SIGNAL("textChanged(QString)"),
                      self, SLOT("mytextChanged(QString)"))

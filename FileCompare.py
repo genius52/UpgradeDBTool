@@ -53,26 +53,21 @@ def GenerateCreateTableSql(createtableline,filecontent):
 
 def GenerateUpgradeSql(oldSql,newSql):
     try:
-        oldFile = open(oldSql,'r')
-        newFile = open(newSql,'r')
-        if oldSql == "" or newSql == "":
-            sys.exit()
-        with open(oldSql, 'r') as oldfile:
-            oldlines = oldfile.read()
-        with open(newSql, 'r') as newfile:
-            newlines = newfile.read()
-        diff = difflib.ndiff(oldlines.splitlines(),newlines.splitlines())
+        oldfile = open(oldSql, 'r')
+        oldlcontent = oldfile.read()
+        newfile = open(newSql, 'r')
+        newcontent = newfile.read()
+        diff = difflib.ndiff(oldlcontent.splitlines(),newcontent.splitlines())
         upgradeSql = 'use rt_tms;\n'
-        difflist = list(diff)
-        print difflist
-        for d in difflist:
+        # difflist = list(diff)
+        for d in diff:
             if d.startswith('-') == 0:#'delete attribute in old sql'
                 if d.startswith("create table"):
                     delTableSql = GenerateDeleteTableSql(d[1:])
                     if delTableSql != None:
                         upgradeSql = upgradeSql + delTableSql + '\n'
                         continue
-                tablename = FindRelatedTable(d[1:].strip(),oldlines)
+                tablename = FindRelatedTable(d[1:].strip(), oldlcontent)
                 if tablename != None:
                     delAttrSql = GenerateDeleteAttributeSql(tablename,d[1:])
                     if delAttrSql != None:
@@ -82,7 +77,7 @@ def GenerateUpgradeSql(oldSql,newSql):
                 #     createTableSql = GenerateCreateTableSql(d[1:],newlines)
                 #     if createTableSql != None:
                 #         upgradeSql = upgradeSql + createTableSql + '\n'
-                tablename = FindRelatedTable(d[1:].strip(), newlines)
+                tablename = FindRelatedTable(d[1:].strip(), newcontent)
                 if tablename != None:
                     sentence = GenerateAddAttributeSql(tablename,d[1:])
                     if sentence != None:
@@ -90,10 +85,6 @@ def GenerateUpgradeSql(oldSql,newSql):
             elif d.startswith('?') == 0:
                 print "unclear modify exist ",d
         return upgradeSql
-    except:
-        oldFile.close()
-        newFile.close()
+    except Exception as e:
+        print e
         return None
-    else:
-        oldFile.close()
-        newFile.close()

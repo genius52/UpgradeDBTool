@@ -1,7 +1,6 @@
 #coding=utf-8
 import sys
 from PyQt4 import QtGui,QtCore
-import FileCompare
 import MainWindow
 
 
@@ -9,6 +8,9 @@ import MainWindow
 
 
 if __name__ == '__main__':
+    # with open("D:\RT_TMS\MAIN\Scripts\TSS\AppServer\InstallScripts\TMSDB.sql", 'r+') as newfile:
+    #     newlines = newfile.readlines()
+
     app = QtGui.QApplication(sys.argv)
     Dialog = QtGui.QDialog()
     ui = MainWindow.Ui_Dialog()
