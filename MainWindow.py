@@ -126,27 +126,25 @@ class Ui_Dialog(object):
                 with open(str(self.textUpgradeSql.text),"wt") as newsql:
                     newsql.write(sql)
         except Exception as e:
-            print e
+            QMessageBox.information(None, "upgradeSql FAIL!", QString(e.message()))
 
 
     def updateDbwrapper(self):
-        #执行Sql->更新dbwrapper->修改Design.cs文件
-        print self.textDbwrapper.text()
-
+        #执行新的Sql->更新dbwrapper->修改Design.cs文件
         crcTool = os.path.join(os.getcwd(),GlobalSetting.CrcDbwrapper_TOOL)
-        cmd = "%s %s"%(crcTool,str(self.textDbwrapper.text().replace("\\","/")))
+        cmd = "%s %s"%(crcTool,str(self.textDbwrapper.text()))
         result = os.system(cmd)
-        # print result.read()
-        return
+        if result != 0:
+            QMessageBox.information(None,"",u"更新DBWrapper失败")
 
     def GenerateVarDefinition(self,attrtype, attr):
         definiton = "\t\t[DataMember]\n\t\tpublic"
         if "char" in attrtype:
-            definiton = definiton + " string " + attr.capitalize() + "\n"
+            definiton = definiton + " string " + attr.capitalize() + ";\n"
         elif "float" in attrtype:
-            definiton = definiton + " float " + attr.capitalize() + "\n"
+            definiton = definiton + " float " + attr.capitalize() + ";\n"
         elif "int" in attrtype:
-            definiton = definiton + " int " + attr.capitalize() + "\n"
+            definiton = definiton + " int " + attr.capitalize() + ";\n"
         return definiton
 
     def AddAttributeInFile(self,table, attrtype, attr):
@@ -216,7 +214,7 @@ class Ui_Dialog(object):
                     print "Delete %s" % diffline[1:]
 
         except Exception as e:
-            print e
+            QMessageBox.information(None, "ModifySystemdataCode FAIL!", QString(e.message()))
 
     def updateSystemdata(self):
         try:
@@ -228,7 +226,7 @@ class Ui_Dialog(object):
             if result:
                 print result
         except Exception as e:
-            QMessageBox.information(self,"updateSystemdata FAIL!",QString(e.message()))
+            QMessageBox.information(None,"updateSystemdata FAIL!",QString(e.message()))
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "数据库升级工具", None))
