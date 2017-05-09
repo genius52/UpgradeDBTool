@@ -12,9 +12,8 @@ from PyQt4.QtCore import pyqtSlot,SIGNAL,SLOT,QString
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QColor,QMessageBox
 import os
-import sys
+import threading
 import difflib
-import re
 import FileCompare
 import GlobalSetting
 import DirEdit
@@ -122,20 +121,32 @@ class Ui_Dialog(object):
             # newSqlPath = "D:\diff2.txt"
             sql = FileCompare.GenerateUpgradeSql(oldSqlPath,newSqlPath)
             if sql != None:
-                self.textUpgradeSql.setText(os.path.join(os.getcwd(),"upgrade.sql"))
-                with open(str(self.textUpgradeSql.text),"wt") as newsql:
-                    newsql.write(sql)
+                if cmp(sql,"equal") == 0:
+                    QMessageBox.information(None, "", u"数据库没有改动,不需要生成升级脚本！")
+                    return
+                else:
+                    self.textUpgradeSql.setText(os.path.join(os.getcwd(),"upgrade.sql"))
+                    with open(str(self.textUpgradeSql.text()),'w+') as newsql:
+                        newsql.write(sql)
         except Exception as e:
-            QMessageBox.information(None, "upgradeSql FAIL!", QString(e.message()))
+            QMessageBox.information(None, "upgradeSql FAIL!", e.strerror)
+        else:
+            QMessageBox.information(None, "", u"更新Sql成功")
 
 
     def updateDbwrapper(self):
         #执行新的Sql->更新dbwrapper->修改Design.cs文件
-        crcTool = os.path.join(os.getcwd(),GlobalSetting.CrcDbwrapper_TOOL)
-        cmd = "%s %s"%(crcTool,str(self.textDbwrapper.text()))
-        result = os.system(cmd)
-        if result != 0:
-            QMessageBox.information(None,"",u"更新DBWrapper失败")
+        try:
+            crcTool = os.path.join(os.getcwd(),GlobalSetting.CrcDbwrapper_TOOL)
+            cmd = "%s %s"%(crcTool,str(self.textDbwrapper.text()))
+            result = os.system(cmd)
+            if result != 0:
+                QMessageBox.information(None,"",u"更新DBWrapper失败")
+                return
+        except Exception as e:
+            QMessageBox.information(None, "updateDbwrapper FAIL!", e.strerror)
+        else:
+            QMessageBox.information(None, "", u"更新DBWrapper成功")
 
     def GenerateVarDefinition(self,attrtype, attr):
         definiton = "\t\t[DataMember]\n\t\tpublic"
@@ -196,25 +207,22 @@ class Ui_Dialog(object):
         convertorfile.close()
 
     def ModifySystemdataCode(self,oldSql, newSql):
-        try:
-            oldfile = open(oldSql, 'r')
-            oldlcontent = oldfile.read()
-            newfile = open(newSql, 'r')
-            newcontent = newfile.read()
-            diff = difflib.ndiff(oldlcontent.splitlines(), newcontent.splitlines())
-            for diffline in diff:
-                if diffline.startswith('+'):
-                    tablename = FileCompare.FindRelatedTable(diffline[1:].strip(), newcontent)
-                    if tablename != None:
-                        valueType = diffline[1:].strip().split()
-                        if len(valueType) > 2:
-                            self.AddAttributeInFile(tablename, valueType[1], valueType[0])
-                            self.AddConvertorInFile(tablename, valueType[1], valueType[0])
-                elif diffline.startswith('-'):
-                    print "Delete %s" % diffline[1:]
+        oldfile = open(oldSql, 'r')
+        oldlcontent = oldfile.read()
+        newfile = open(newSql, 'r')
+        newcontent = newfile.read()
+        diff = difflib.ndiff(oldlcontent.splitlines(), newcontent.splitlines())
+        for diffline in diff:
+            if diffline.startswith('+'):
+                tablename = FileCompare.FindRelatedTable(diffline[1:].strip(), newcontent)
+                if tablename != None:
+                    valueType = diffline[1:].strip().split()
+                    if len(valueType) > 2:
+                        self.AddAttributeInFile(tablename, valueType[1], valueType[0])
+                        self.AddConvertorInFile(tablename, valueType[1], valueType[0])
+            elif diffline.startswith('-'):
+                print "Delete %s" % diffline[1:]
 
-        except Exception as e:
-            QMessageBox.information(None, "ModifySystemdataCode FAIL!", QString(e.message()))
 
     def updateSystemdata(self):
         try:
@@ -226,7 +234,9 @@ class Ui_Dialog(object):
             if result:
                 print result
         except Exception as e:
-            QMessageBox.information(None,"updateSystemdata FAIL!",QString(e.message()))
+            QMessageBox.information(None,"updateSystemdata FAIL!",e.strerror)
+        else:
+            QMessageBox.information(None, "", u"更新Systemdata 代码成功")
 
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(_translate("Dialog", "数据库升级工具", None))

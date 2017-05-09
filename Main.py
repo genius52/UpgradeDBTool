@@ -1,5 +1,6 @@
 #coding=utf-8
 import sys
+import atexit
 from PyQt4 import QtGui,QtCore
 import MainWindow
 

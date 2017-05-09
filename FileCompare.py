@@ -58,8 +58,9 @@ def GenerateUpgradeSql(oldSql,newSql):
         newfile = open(newSql, 'r')
         newcontent = newfile.read()
         diff = difflib.ndiff(oldlcontent.splitlines(),newcontent.splitlines())
-        upgradeSql = 'use rt_tms;\n'
-        # difflist = list(diff)
+        sqlPrefix = "use rt_tms;\n"
+        upgradeSql = sqlPrefix
+        print list(diff)
         for d in diff:
             if d.startswith('-') == 0:#'delete attribute in old sql'
                 if d.startswith("create table"):
@@ -84,7 +85,10 @@ def GenerateUpgradeSql(oldSql,newSql):
                         upgradeSql = upgradeSql + sentence + '\n'
             elif d.startswith('?') == 0:
                 print "unclear modify exist ",d
-        return upgradeSql
+        if cmp(upgradeSql,sqlPrefix) == 0:
+            return "equal"
+        else:
+            return upgradeSql
     except Exception as e:
         print e
         return None
