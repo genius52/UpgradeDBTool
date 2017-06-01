@@ -1,6 +1,4 @@
-import filecmp
 import difflib
-import sys
 import re
 
 def FindRelatedTable(s,filecontent):

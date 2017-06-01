@@ -12,11 +12,11 @@ from PyQt4.QtCore import pyqtSlot,SIGNAL,SLOT,QString
 from PyQt4 import QtGui, QtCore
 from PyQt4.QtGui import QColor,QMessageBox
 import os
-import threading
 import difflib
 import FileCompare
 import GlobalSetting
 import DirEdit
+import UpgradeDBDesigner
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -135,12 +135,9 @@ class Ui_Dialog(object):
 
 
     def updateDbwrapper(self):
-        #执行新的Sql->更新dbwrapper->修改Design.cs文件
         try:
-            crcTool = os.path.join(os.getcwd(),GlobalSetting.CrcDbwrapper_TOOL)
-            cmd = "%s %s"%(crcTool,str(self.textDbwrapper.text()))
-            result = os.system(cmd)
-            if result != 0:
+            result = UpgradeDBDesigner.UpgradeDBDesignerFile(self.textDbwrapper.text())
+            if not result:
                 QMessageBox.information(None,"",u"更新DBWrapper失败")
                 return
         except Exception as e:
